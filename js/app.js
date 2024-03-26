@@ -1,5 +1,6 @@
 let elements = {
   container: "container",
+  helpfulLinks: "helpful-links",
   welcomeId: "welcome",
   quoteId: "quote",
 };
@@ -43,10 +44,18 @@ let urls = [
   },
 ];
 
+let helpfulLinks = [
+  {
+    link: "https://json2csharp.com/",
+    title: "Json -> C# Converter"
+  },
+];
+
 document.addEventListener("DOMContentLoaded", function (event) {
   updateWelcome();
   updateRandomQuote();
   displayWebsiteCards();
+  displayHelpfulLinks();
 });
 
 function openDailyWebsites() {
@@ -88,6 +97,38 @@ function displayWebsiteCards() {
   });
 
   setText(elements.container, html);
+}
+
+function displayHelpfulLinks() {
+
+  var cardTemplate =
+    '<li><strong>{{title}}:</strong> <a href="{{link}}" target="_blank">{{link}}</a></li>';
+
+  var rowTemplate =
+    '<ul>{{content}}</ul>';
+
+  var html = "";
+  var current = 0;
+  var columnsHtml = "";
+  helpfulLinks.forEach((element) => {
+
+    var columnHtml = cardTemplate
+      .replace("{{link}}", element.link)
+      .replace("{{title}}", element.title)
+      .replace("{{link}}", element.link);
+
+    current++;
+
+    columnsHtml += columnHtml;
+
+    if (current == helpfulLinks.length) {
+      html = rowTemplate.replace("{{content}}", columnsHtml);
+    }
+  });
+
+  console.log(html);
+
+  setText(elements.helpfulLinks, html);
 }
 
 function openUrlById(urlId) {
