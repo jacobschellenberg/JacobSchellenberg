@@ -42,6 +42,12 @@ let urls = [
     image: "images/mysterium-logo.png",
     groups: [],
   },
+  {
+    id: "fridge",
+    url: "https://www.samsung.com/us/home-appliances/refrigerators/bespoke/bespoke-4-door-flex-refrigerator-29-cu-ft-in-clementine-glass-bndl-1664301452912/",
+    image: "images/fridge.png",
+    groups: [],
+  },
 ];
 
 let helpfulLinks = [
