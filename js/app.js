@@ -1,6 +1,8 @@
 let elements = {
   container: "container",
   helpfulLinks: "helpful-links",
+  researchLinks: "research-links",
+  shoppingLinks: "shopping-links",
   welcomeId: "welcome",
   quoteId: "quote",
 };
@@ -41,13 +43,7 @@ let urls = [
     url: "https://aixankelthex.com",
     image: "images/mysterium-logo.png",
     groups: [],
-  },
-  {
-    id: "fridge",
-    url: "https://www.samsung.com/us/home-appliances/refrigerators/bespoke/bespoke-4-door-flex-refrigerator-29-cu-ft-in-clementine-glass-bndl-1664301452912/",
-    image: "images/fridge.png",
-    groups: [],
-  },
+  }
 ];
 
 let helpfulLinks = [
@@ -57,11 +53,27 @@ let helpfulLinks = [
   },
 ];
 
+let researchLinks = [
+  {
+    link: "https://www.samsung.com/us/home-appliances/refrigerators/bespoke/bespoke-4-door-flex-refrigerator-29-cu-ft-in-clementine-glass-bndl-1664301452912/",
+    title: "Four Door Flex"
+  },
+];
+
+let shoppingLinks = [
+  {
+    link: "https://gamersguildaz.com/",
+    title: "Gamers Guild AZ"
+  },
+];
+
 document.addEventListener("DOMContentLoaded", function (event) {
   updateWelcome();
   updateRandomQuote();
   displayWebsiteCards();
-  displayHelpfulLinks();
+  displayLinks(researchLinks, elements.researchLinks);
+  displayLinks(helpfulLinks, elements.helpfulLinks);
+  displayLinks(shoppingLinks, elements.shoppingLinks);
 });
 
 function openDailyWebsites() {
@@ -105,7 +117,7 @@ function displayWebsiteCards() {
   setText(elements.container, html);
 }
 
-function displayHelpfulLinks() {
+function displayLinks(links, elementId) {
 
   var cardTemplate =
     '<li><strong>{{title}}:</strong> <a href="{{link}}" target="_blank">{{link}}</a></li>';
@@ -116,7 +128,7 @@ function displayHelpfulLinks() {
   var html = "";
   var current = 0;
   var columnsHtml = "";
-  helpfulLinks.forEach((element) => {
+  links.forEach((element) => {
 
     var columnHtml = cardTemplate
       .replace("{{link}}", element.link)
@@ -127,14 +139,14 @@ function displayHelpfulLinks() {
 
     columnsHtml += columnHtml;
 
-    if (current == helpfulLinks.length) {
+    if (current == links.length) {
       html = rowTemplate.replace("{{content}}", columnsHtml);
     }
   });
 
   console.log(html);
 
-  setText(elements.helpfulLinks, html);
+  setText(elementId, html);
 }
 
 function openUrlById(urlId) {
