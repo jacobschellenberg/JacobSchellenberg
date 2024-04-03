@@ -3,6 +3,7 @@ let elements = {
   helpfulLinks: "helpful-links",
   researchLinks: "research-links",
   shoppingLinks: "shopping-links",
+  updatesLinks: "updates-links",
   welcomeId: "welcome",
   quoteId: "quote",
 };
@@ -12,7 +13,7 @@ let urls = [
     id: "paizo",
     url: "https://paizo.com/",
     image: "images/paizo.png",
-    groups: [],
+    groups: ["daily"],
   },
   {
     id: "inMaricopa",
@@ -33,17 +34,32 @@ let urls = [
     groups: ["daily"],
   },
   {
-    id: "warhammerCompetitive",
-    url: "https://www.reddit.com/r/WarhammerCompetitive/",
-    image: "images/warhammer-competitive.jpg",
-    groups: [],
+    id: "Star Wars Unlimited",
+    url: "https://starwarsunlimited.com/articles",
+    image: "images/starwarsunlimited.png",
+    groups: ["daily"],
   },
   {
     id: "aixanKelthex",
-    url: "https://aixankelthex.com",
+    url: "https://aixankelthex.com/",
     image: "images/mysterium-logo.png",
     groups: [],
   }
+];
+
+let updatesLinks = [
+  {
+    link: "https://starwarsunlimited.com/articles",
+    title: "Star Wars Unlimited"
+  },
+  {
+    link: "https://www.warhammer-community.com/en-us/latest-news-features/",
+    title: "Warhammer Community"
+  },
+  {
+    link: "https://www.reddit.com/r/WarhammerCompetitive/",
+    title: "/r/WarhammerCompetitive"
+  },
 ];
 
 let helpfulLinks = [
@@ -74,6 +90,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   displayLinks(researchLinks, elements.researchLinks);
   displayLinks(helpfulLinks, elements.helpfulLinks);
   displayLinks(shoppingLinks, elements.shoppingLinks);
+  displayLinks(updatesLinks, elements.updatesLinks);
 });
 
 function openDailyWebsites() {
