@@ -3,3 +3,12 @@
     height: 75px;
     object-fit: cover;
 }
+
+.traffic-cam-card
+{
+    width: 385px;
+}
+
+.traffic-cam {
+    width: 350px;
+}

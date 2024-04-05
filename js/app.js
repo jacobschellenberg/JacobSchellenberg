@@ -4,6 +4,7 @@ let elements = {
   researchLinks: "research-links",
   shoppingLinks: "shopping-links",
   updatesLinks: "updates-links",
+  trafficCameras: "traffic-cameras",
   welcomeId: "welcome",
   quoteId: "quote",
 };
@@ -45,6 +46,49 @@ let urls = [
     image: "images/mysterium-logo.png",
     groups: [],
   }
+];
+
+let trafficCameras = [
+  {
+    source: "https://az511.com/map/Cctv/536--14",
+    title: "SR347 @ SMITH ENKE"
+  },
+  {
+    source: "https://az511.com/map/Cctv/538--14",
+    title: "SR347 @ CASABLANCA"
+  },
+  {
+    source: "https://az511.com/map/Cctv/540--14",
+    title: "SR347 @ RIGGS"
+  },
+  {
+    source: "https://az511.com/map/Cctv/539--14",
+    title: "SR347 @ GRAVEL PIT"
+  },
+  {
+    source: "https://az511.com/map/Cctv/537--14",
+    title: "SR347 @ COBBLESTONE NORTH"
+  },
+  {
+    source: "https://az511.com/map/Cctv/532--14",
+    title: "SR347 @ ALTERRA"
+  },
+  {
+    source: "https://az511.com/map/Cctv/531--14",
+    title: "SR347 @ FARRELL"
+  },
+  {
+    source: "https://az511.com/map/Cctv/535--14",
+    title: "SR347 @ EDISON"
+  },
+  {
+    source: "https://az511.com/map/Cctv/208--14",
+    title: "I-10EB E OF WILD HORSE PASS"
+  },
+  {
+    source: "https://az511.com/map/Cctv/209--14",
+    title: "I-10 WB OF QUEEN CREEK RD"
+  },
 ];
 
 let updatesLinks = [
@@ -91,6 +135,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   displayLinks(helpfulLinks, elements.helpfulLinks);
   displayLinks(shoppingLinks, elements.shoppingLinks);
   displayLinks(updatesLinks, elements.updatesLinks);
+  displayTrafficCameras();
 });
 
 function openDailyWebsites() {
@@ -132,6 +177,38 @@ function displayWebsiteCards() {
   });
 
   setText(elements.container, html);
+}
+
+function displayTrafficCameras() {
+  var cardTemplate =
+  '<div class="col-sm-2 d-flex align-items-stretch"> <div class="card box-shadow"> <div>{{title}}</div> <a href="{{source}}"><img class="img-fluid card-img-top p-1" src="{{source}}"></a> <div class="card-body d-flex flex-column"></div> </div> </div>';
+
+var rowTemplate =
+  '<div class="row pt-1 justify-content-center">{{content}}</div>';
+
+  var columnMax = 3;
+  var currentColumnCount = 0;
+  var html = "";
+  var columnsHtml = "";
+  var totalColumns = 0;
+  trafficCameras.forEach((element) => {
+    var columnHtml = cardTemplate
+      .replace("{{title}}", element.title)
+      .replace("{{source}}", element.source)
+      .replace("{{source}}", element.source);
+    columnsHtml += columnHtml;
+
+    currentColumnCount += 1;
+    totalColumns += 1;
+    if (currentColumnCount >= columnMax || totalColumns == trafficCameras.length) {
+      html += rowTemplate.replace("{{content}}", columnsHtml);
+      currentColumnCount = 0;
+      rowHtml = "";
+      columnsHtml = "";
+    }
+  });
+
+  setText(elements.trafficCameras, html);
 }
 
 function displayLinks(links, elementId) {
