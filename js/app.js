@@ -14,7 +14,7 @@ let urls = [
     id: "paizo",
     url: "https://paizo.com/",
     image: "images/paizo.png",
-    groups: ["daily"],
+    groups: [],
   },
   {
     id: "inMaricopa",
@@ -32,19 +32,24 @@ let urls = [
     id: "warhammerCommunity",
     url: "https://www.warhammer-community.com/en-us/latest-news-features/",
     image: "images/warhammer-community-logo.png",
-    groups: ["daily"],
+    groups: [],
   },
   {
     id: "Star Wars Unlimited",
     url: "https://starwarsunlimited.com/articles",
     image: "images/starwarsunlimited.png",
-    groups: ["daily"],
+    groups: [],
   },
   {
     id: "aixanKelthex",
     url: "https://aixankelthex.com/",
     image: "images/mysterium-logo.png",
     groups: [],
+  }{
+    id: "nintendo",
+    url: "https://nintendo.com/",
+    image: "images/nintendo-logo.png",
+    groups: ["daily"],
   }
 ];
 
