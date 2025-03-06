@@ -1,119 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Console</title>
+    <style>
+        /* General Styles */
+        body {
+            background-color: black;
+            color: green;
+            font-family: monospace;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
 
-  <meta name="description" content="" />
-  <link href="https://cdn.jsdelivr.net/npm/modern-normalize@v2.0.0/modern-normalize.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    crossorigin="anonymous" />
-  <link rel="stylesheet" type="text/css" href="css/style.css" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <meta name="theme-color" content="#ff0000" />
+        /* Terminal Window */
+        #terminal {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Input Line */
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt {
+            color: lime;
+            flex-shrink: 0;
+        }
+
+        .input {
+            background: none;
+            border: none;
+            color: inherit;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            flex-grow: 1;
+            caret-color: white;
+            width: 100%;
+        }
+
+        /* Mobile Enhancements */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
-
 <body>
-  <header>
-    <div class="navbar navbar-dark bg-dark box-shadow">
-      <div class="container d-flex justify-content-between">
-        <a href="#" class="navbar-brand d-flex align-items-center">
-          <strong>Dashboard</strong>
-        </a>
-      </div>
-    </div>
-  </header>
 
-  <main>
-    <section>
-      <a class="weatherwidget-io" href="https://forecast7.com/en/33d06n112d05/maricopa/?unit=us" data-label_1="MARICOPA" data-label_2="WEATHER" data-theme="original" >MARICOPA WEATHER</a>
+<div id="terminal"></div>
+
 <script>
-!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+    const terminal = document.getElementById("terminal");
+    let commandHistory = JSON.parse(localStorage.getItem("history")) || [];
+    let historyIndex = commandHistory.length;
+    let currentDir = "/";
+    let fileSystem = { "/": {} };
+
+    function displayBanner() {
+        const banner = `
+        ========================
+        Welcome to Web Terminal
+        Type 'help' for commands
+        ========================`;
+        printOutput(banner);
+    }
+
+    function createInputLine() {
+        const inputLine = document.createElement("div");
+        inputLine.classList.add("input-line");
+
+        const prompt = document.createElement("span");
+        prompt.classList.add("prompt");
+        prompt.textContent = `${currentDir} > `;
+
+        const input = document.createElement("input");
+        input.classList.add("input");
+        input.type = "text";
+        input.autofocus = true;
+
+        inputLine.appendChild(prompt);
+        inputLine.appendChild(input);
+        terminal.appendChild(inputLine);
+
+        input.focus();
+
+        input.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                processCommand(input.value);
+                input.remove();
+                inputLine.textContent = `${currentDir} > ${input.value}`;
+                createInputLine();
+            } else if (event.key === "ArrowUp") {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    input.value = commandHistory[historyIndex];
+                }
+                event.preventDefault();
+            } else if (event.key === "ArrowDown") {
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    input.value = commandHistory[historyIndex];
+                } else {
+                    input.value = "";
+                }
+                event.preventDefault();
+            } else if (event.key === "Tab") {
+                event.preventDefault();
+                autocompleteCommand(input);
+            }
+        });
+
+        scrollToBottom();
+    }
+
+    function processCommand(command) {
+        command = command.trim();
+        if (!command.startsWith("!")) {
+            return;
+        }
+
+        if (command === "") return;
+
+        commandHistory.push(command);
+        localStorage.setItem("history", JSON.stringify(commandHistory));
+        historyIndex = commandHistory.length;
+
+        let response = "";
+        let args = command.slice(1).split(" "); // Remove "!" before parsing
+        const cmd = args[0];
+
+        switch (cmd.toLowerCase()) {
+            case "help":
+                response = "Commands: help, clear, echo, theme, ls, cd, mkdir, touch, rm, fetch, login, logout";
+                break;
+            case "clear":
+                terminal.innerHTML = "";
+                createInputLine();
+                return;
+            case "echo":
+                response = args.slice(1).join(" ");
+                break;
+            case "theme":
+                changeTheme(args[1]);
+                return;
+            case "ls":
+                response = Object.keys(fileSystem[currentDir] || {}).join("  ");
+                break;
+            case "cd":
+                if (args[1] && fileSystem[args[1]]) {
+                    currentDir = args[1];
+                } else {
+                    response = "Directory not found.";
+                }
+                break;
+            case "mkdir":
+                if (args[1]) {
+                    fileSystem[currentDir][args[1]] = {};
+                    fileSystem[args[1]] = {};
+                    response = `Directory '${args[1]}' created.`;
+                }
+                break;
+            case "touch":
+                if (args[1]) {
+                    fileSystem[currentDir][args[1]] = "";
+                    response = `File '${args[1]}' created.`;
+                }
+                break;
+            case "rm":
+                if (args[1] && fileSystem[currentDir][args[1]]) {
+                    delete fileSystem[currentDir][args[1]];
+                    response = `Removed '${args[1]}'.`;
+                } else {
+                    response = "File or directory not found.";
+                }
+                break;
+            case "fetch":
+                if (args[1]) {
+                    fetchWithFallback(args[1]);
+                    return;
+                }
+                response = "Usage: fetch [URL]";
+                break;
+            case "login":
+                response = "Login successful. (Fake authentication)";
+                break;
+            case "logout":
+                response = "Logged out.";
+                break;
+            case "open":
+                if (args[1]) {
+                    openSingleTab(args[1]);
+                    return;
+                }
+                response = "Usage: open [URL]";
+                break;
+            case "bookmarks":
+                    showBookmarkButton(bookmarks);
+                    return;
+                break;
+            default:
+                response = "Unknown command. Type 'help' for a list of commands.";
+        }
+
+        printOutput(response);
+    }
+
+    function printOutput(text) {
+        const output = document.createElement("div");
+        output.textContent = text;
+        terminal.appendChild(output);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        setTimeout(() => {
+            terminal.scrollTop = terminal.scrollHeight;
+        }, 50);
+    }
+
+    function changeTheme(color) {
+        const colors = {
+            "green": "green",
+            "amber": "orange",
+            "white": "white"
+        };
+        if (colors[color]) {
+            document.body.style.color = colors[color];
+            printOutput(`Theme changed to ${color}.`);
+        } else {
+            printOutput("Available themes: green, amber, white");
+        }
+    }
+
+    function autocompleteCommand(input) {
+        const commands = ["help", "clear", "echo", "theme", "ls", "cd", "mkdir", "touch", "rm", "fetch", "login", "logout"];
+        const match = commands.find(cmd => cmd.startsWith(input.value));
+        if (match) {
+            input.value = match;
+        }
+    }
+
+    const bookmarks = [
+        { name: "Warhammer Community", url: "https://www.warhammer-community.com/en-gb/all-news-and-features/" },
+        { name: "Moon Calendar", url: "https://mooncal.ch/en/calendar#calendar" },
+        { name: "InMaricopa", url: "https://www.inmaricopa.com" },
+        { name: "Arstechnica", url: "https://arstechnica.com" },
+        { name: "Spawn Wave Media", url: "https://www.youtube.com/@SpawnWave/videos" }
+    ];
+
+    function openSingleTab(url) {
+        if (!url.startsWith("http")) {
+            url = "https://" + url;
+        }
+        window.open(url, '_blank');
+    }
+
+    function showBookmarkButton(bookmarks) {
+        // Remove existing buttons if present
+        const existingContainer = document.getElementById("bookmarkContainer");
+        if (existingContainer) {
+            existingContainer.remove();
+        }
+
+        // Create a new container for bookmark buttons
+        const container = document.createElement("div");
+        container.id = "bookmarkContainer";
+        container.style.marginTop = "10px";
+
+        // Create a button for each bookmark
+        bookmarks.forEach(bookmark => {
+            const button = document.createElement("button");
+            button.textContent = bookmark.name;
+            button.style.padding = "8px 12px";
+            button.style.margin = "5px";
+            button.style.cursor = "pointer";
+            button.style.background = "#222";
+            button.style.color = "lime";
+            button.style.border = "1px solid lime";
+            button.style.fontFamily = "monospace";
+
+            // Click event to open the URL
+            button.onclick = function () {
+                openSingleTab(bookmark.url);
+            };
+
+            container.appendChild(button);
+        });
+
+        // Append the container to the terminal
+        terminal.appendChild(container);
+        scrollToBottom();
+    }
+
+    function fetchWithFallback(url) {
+        if (!url.startsWith("http")) {
+            url = "https://" + url;
+        }
+
+        printOutput(`Fetching: ${url}`);
+
+        const loadingIndicator = document.createElement("span");
+        loadingIndicator.textContent = " [LOADING...]";
+        const lastOutput = terminal.lastChild;
+        lastOutput.appendChild(loadingIndicator); // Attach loading indicator to the last command output
+
+        const proxyList = [
+            url,
+            `https://thingproxy.freeboard.io/fetch/${url}`,
+            `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+            `https://corsproxy.io/?${encodeURIComponent(url)}`
+        ];
+
+        let attempt = 0;
+
+        function tryFetch() {
+            if (attempt >= proxyList.length) {
+                loadingIndicator.textContent = " [FAILED]";
+                printOutput("Error: Unable to fetch data from any source.");
+                return;
+            }
+
+            let fetchUrl = proxyList[attempt];
+            printOutput(`Attempting fetch #${attempt + 1}: ${fetchUrl}`);
+
+            fetch(fetchUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.text();
+                })
+                .then(data => {
+                    loadingIndicator.textContent = " [DONE]";
+                    printOutput(`Success (Source ${attempt + 1}):\n${data.substring(0, 500)}...`); // Show first 500 chars
+                })
+                .catch(error => {
+                    loadingIndicator.textContent = " [RETRYING...]";
+                    printOutput(`Failed attempt #${attempt + 1}: ${error.message}`);
+                    attempt++;
+                    tryFetch(); // Retry with the next proxy
+                });
+        }
+
+        tryFetch();
+    }
+
+    // displayBanner();
+    createInputLine();
 </script>
-    </section>
 
-    <section class="pt-3 jumbotron text-center">
-      <div class="container">
-        <h1 id="welcome" class="jumbotron-heading">Good Morning</h1>
-        <p id="quote" class="lead text-muted"></p>
-      </div>
-    </section>
-
-    <div class="py-3 bg-light text-center">
-      <div class="container">
-        <button type="button" class="btn btn-primary my-2" onclick="openDailyWebsites()">
-          Open Daily Websites
-        </button>
-      </div>
-      <div id="container" class="container"></div>
-    </div>
-
-    <!-- 
-    <section class="py-3 jumbotron text-center">
-      <div class="container">
-        <h1 id="welcome" class="jumbotron-heading">!SWM</h1>
-      </div>
-
-      <div class="container">
-        <div class="row">
-          <div class="col-sm embed-responsive embed-responsive-16by9">
-            <iframe src="https://www.youtube.com/embed?listType=playlist&list=UUoIXnB865l9Ex9zs4OIXTdQ"></iframe>
-          </div>
-        </div>
-      </div>
-    </section>
-    -->
-
-    <section class="container">
-      <div class="py-3 bg-light">
-        <div>Keep Me Updated</div>
-        <div id="updates-links" class="container"></div>
-      </div>
-    </section>
-
-    <section class="container">
-      <div class="py-3 bg-light">
-        <div>Shopping Links</div>
-        <div id="shopping-links" class="container"></div>
-      </div>
-    </section>
-
-    <section class="container">
-      <div class="py-3 bg-light">
-        <div>Research Links</div>
-        <div id="research-links" class="container"></div>
-      </div>
-    </section>
-
-    <section class="container">
-      <div class="py-3 bg-light">
-        <div>Helpful Links</div>
-        <div id="helpful-links" class="container"></div>
-      </div>
-    </section>
-
-    <div class="py-3 bg-light text-center">
-      <div class="container">
-      </div>
-      <div id="traffic-cameras" class="container"></div>
-    </div>
-
-  </main>
-
-  <footer class="bg-body-tertiary text-center text-lg-start">
-    <!-- Copyright -->
-    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
-      © 2024 Copyright:
-      <a class="text-body" href="#">Jacob Schellenberg</a>
-    </div>
-    <!-- Copyright -->
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    crossorigin="anonymous"></script>
-  <script src="js/app.js"></script>
 </body>
-
 </html>
